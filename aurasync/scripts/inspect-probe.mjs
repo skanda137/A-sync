@@ -1,3 +1,5 @@
+// Prints the exact values behind the two open questions from the probe. Reads probe-out/*.json (no network, no key).
+// Usage: node scripts/inspect-probe.mjs
 import { readFileSync } from 'node:fs';
 
 const read = (f) => JSON.parse(readFileSync(`probe-out/${f}.json`, 'utf8'));

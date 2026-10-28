@@ -17,7 +17,7 @@ describe('analyst', () => {
   it('resolves signals, tags and recommendations; no re-plan when enough signals', async () => {
     const notes: string[] = [];
     const ev = await runAnalyst(seed, { qloo: mk(qlooStub()), llm: llmStub(() => ({})), note: (m) => notes.push(m) });
-    expect(ev.signals.map((s) => s.name)).toEqual(['Alpha', 'Beta']);
+    expect(ev.signals.map((s) => s.name)).toEqual(['Alpha', 'Beta', 'Delta']);
     expect(ev.tags).toHaveLength(2);
     expect(ev.entities.length).toBe(9);
     expect(ev.replanned).toBe(false);
@@ -33,8 +33,9 @@ describe('analyst', () => {
       if (u.pathname === '/v2/tags' && u.searchParams.get('filter.query') === 'indie rock') return json(200, { results: { tags: [{ id: 'urn:tag:pasta', name: 'Pasta Carbonara' }] } });
       return stub(url, init);
     }) as unknown as typeof fetch;
-    const ev = await runAnalyst(seed, { qloo: mk(f), llm: llmStub(() => ({}), { plan: { ...PLAN } }) });
+    const ev = await runAnalyst(seed, { qloo: mk(f), llm: llmStub(() => ({ action: 'stop', reason: 'test' }), { plan: { ...PLAN } }), maxRefineRounds: 0 });
     expect(ev.unresolved).toEqual(expect.arrayContaining(['entity: Alpha', 'entity: Beta', 'tag: indie rock']));
+    expect(ev.signals.map((x) => x.name)).toEqual(['Delta']);
     expect(ev.tags.map((t) => t.queriedAs)).toEqual(['specialty coffee']);
   });
 
@@ -58,7 +59,7 @@ describe('analyst', () => {
     const ev = await runAnalyst(seed, { qloo: mk(f), llm, note: (m) => notes.push(m) });
     expect(log).toEqual(['plan', 'plan']);
     expect(ev.replanned).toBe(true);
-    expect(ev.signals.length).toBe(2);
+    expect(ev.signals.length).toBe(3);
     expect(notes[0]).toMatch(/Re-planning once/);
     expect(ev.unresolved).toContain('entity: Ghost');
   });
@@ -161,5 +162,35 @@ describe('adaptive refinement', () => {
 
   it('parseRefine accepts fenced JSON', () => {
     expect(parseRefine('```json\n' + JSON.stringify(refineJson) + '\n```')?.type).toBe('urn:entity:brand');
+  });
+});
+
+describe('REGRESSION (live data): relevance and type-gap trigger', () => {
+  it('does not accept "WAVE Sports" for "Third Wave Coffee" (one shared word is not a match)', async () => {
+    const stub = qlooStub();
+    const f = (async (url: string, init?: RequestInit) => {
+      const u = new URL(url);
+      if (u.pathname === '/search' && u.searchParams.get('query') === 'Third Wave Coffee') return json(200, { results: [{ entity_id: 'W', name: 'WAVE Sports', types: ['urn:entity:brand'] }] });
+      return stub(url, init);
+    }) as unknown as typeof fetch;
+    const plan = { ...PLAN, entities: [...PLAN.entities, { name: 'Third Wave Coffee', type: 'urn:entity:brand' }] };
+    const ev = await runAnalyst(seed, { qloo: mk(f), llm: llmStub(() => ({}), { plan }) });
+    expect(ev.unresolved).toContain('entity: Third Wave Coffee');
+    expect(ev.signals.map((s) => s.id)).not.toContain('W');
+  });
+
+  it('refines when a type has strong recommendations but NO seed entity of that type', async () => {
+    const log: string[] = [];
+    const plan = { ...PLAN, entities: PLAN.entities.filter((e) => e.type !== 'urn:entity:artist') };
+    const llm = {
+      async complete(system: string) {
+        log.push(system.startsWith('You plan Qloo') ? 'plan' : 'refine');
+        return JSON.stringify(system.startsWith('You plan Qloo') ? plan : { action: 'refine', type: 'urn:entity:artist', entities: [{ name: 'Zed', type: 'urn:entity:artist' }], tagQueries: [], reason: 'No artist seed; recommendations were driven by brands and places only.' });
+      },
+    };
+    const ev = await runAnalyst(seed, { qloo: mk(qlooStub()), llm, maxRefineRounds: 1 });
+    expect(log).toEqual(['plan', 'refine']);
+    expect(ev.signals.map((s) => s.name)).toContain('Zed');
+    expect(ev.refinements[0]).toMatchObject({ type: 'urn:entity:artist', addedEntities: ['Zed'] });
   });
 });

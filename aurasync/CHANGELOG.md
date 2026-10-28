@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — found by the first live run (2026-10-28)
+
+- Analyst accepted "WAVE Sports" for "Third Wave Coffee" (one shared word). Now requires half the significant words (`nameMatch`).
+- Plan prompt now asks for at least one artist, brand and place seed. The live run had no artist seed, and Qloo returned EDM DJs for a Bengaluru café.
+- Refinement trigger now also fires when a type has no seed entity (the live data never fired the old trigger: every affinity was ≥ 0.85).
+- LLM provider is OpenAI-compatible and configurable (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`).
+
 ## 0.2.0 — hardening + features (this version)
 
 Defects found by test against v0.1 and fixed (each has a REGRESSION test):

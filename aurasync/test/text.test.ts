@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { norm, sharesWord, slugWords } from '../src/core/text';
+import { nameMatch, norm, sharesWord, slugWords } from '../src/core/text';
 
 describe('text matching', () => {
   it('norm strips accents, case and punctuation', () => {
@@ -13,5 +13,12 @@ describe('text matching', () => {
   });
   it('slugWords reads the last URN segment', () => {
     expect(slugWords('urn:tag:genre:place:specialty_coffee')).toBe('specialty coffee');
+  });
+  it('nameMatch needs half the significant words, not one', () => {
+    expect(nameMatch('Third Wave Coffee', 'WAVE Sports')).toBe(false);
+    expect(nameMatch('Third Wave Coffee', 'Third Wave Coffee Roasters')).toBe(true);
+    expect(nameMatch('Toit', 'Toit Brewpub')).toBe(true);
+    expect(nameMatch('A.R. Rahman', 'A.R. Rahman')).toBe(true);
+    expect(nameMatch('Prateek Kuhad', 'Kuhad Prateek')).toBe(true);
   });
 });

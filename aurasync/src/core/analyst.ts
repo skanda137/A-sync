@@ -1,5 +1,5 @@
 import { QlooClient, type InsightEntity } from './qloo';
-import { sharesWord, slugWords } from './text';
+import { nameMatch, slugWords } from './text';
 import { MIN_AFFINITY } from './auditor';
 import {
   ENTITY_TYPES,
@@ -26,7 +26,7 @@ Return ONLY a JSON object, no prose:
  "tagQueries":[string],
  "domains":["urn:entity:artist"|"urn:entity:brand"|"urn:entity:place"]}
 Rules:
-- entities: up to 4 REAL, well-known artists, brands or places in the given city that typify the target audience. Do not invent names.
+- entities: up to 5 REAL, well-known artists, brands or places in the given city that typify the target audience. Include at least one artist (a musician the audience listens to), at least one brand and at least one place. Do not invent names.
 - tagQueries: up to 5 short taste terms (cuisines, drinks, music genres, interior styles).
 - domains: the entity types worth recommending for this concept (at least one).
 - If the user message lists names that did NOT resolve, propose different, more widely known ones.`;
@@ -53,7 +53,7 @@ export function parsePlan(text: string): AnalystPlan {
     throw new Error('Analyst plan: tagQueries must be string[]');
   if (!Array.isArray(p.domains) || p.domains.length === 0 || !p.domains.every(isType))
     throw new Error('Analyst plan: domains must be a non-empty array of entity types');
-  return { entities: entities.slice(0, 4), tagQueries: (p.tagQueries as string[]).slice(0, 5), domains: p.domains };
+  return { entities: entities.slice(0, 5), tagQueries: (p.tagQueries as string[]).slice(0, 5), domains: p.domains };
 }
 
 export interface AnalystDeps {
@@ -70,7 +70,7 @@ export const MAX_REFINE_ROUNDS = 2;
 export const CALL_BUDGET = 40; // a normal run uses ~10-14 Qloo calls
 export const STRONG_TARGET = 3; // per type, entities with affinity >= MIN_AFFINITY the Architect can choose from
 
-const REFINE_SYSTEM = `You are the Analyst in a taste-grounded design system. Retrieval from Qloo left some entity types with too little strong evidence (affinity >= ${MIN_AFFINITY}).
+const REFINE_SYSTEM = `You are the Analyst in a taste-grounded design system. Retrieval from Qloo left some entity types thin: fewer than ${STRONG_TARGET} entities with affinity >= ${MIN_AFFINITY}, or NO seed entity of that type (so its recommendations were driven only by other types' seeds).
 You see a summary of the evidence. Decide ONE next step. Return ONLY JSON, no prose:
 {"action":"stop","reason":string}
 or
@@ -132,13 +132,13 @@ async function resolve(plan: AnalystPlan, qloo: QlooClient): Promise<Resolved> {
 
   entityHits.forEach((hits, i) => {
     const want = plan.entities[i]!;
-    const hit = hits.find((h) => h.types.includes(want.type) && sharesWord(want.name, h.name));
+    const hit = hits.find((h) => h.types.includes(want.type) && nameMatch(want.name, h.name));
     if (hit) signals.push({ id: hit.id, name: hit.name, type: want.type });
     else unresolved.push(`entity: ${want.name}`);
   });
   tagHits.forEach((hits, i) => {
     const q = plan.tagQueries[i]!;
-    const hit = hits.find((h) => sharesWord(q, h.name) || sharesWord(q, slugWords(h.id)));
+    const hit = hits.find((h) => nameMatch(q, h.name) || nameMatch(q, slugWords(h.id)));
     if (hit) tags.push({ id: hit.id, name: hit.name, queriedAs: q });
     else unresolved.push(`tag: ${q}`);
   });
@@ -211,7 +211,7 @@ export async function runAnalyst(seed: Seed, { qloo, llm, take = 10, signal, not
   const refinements: Refinement[] = [];
   for (let round = 1; round <= maxRefineRounds; round++) {
     signal?.throwIfAborted();
-    const weak = ENTITY_TYPES.filter((t) => strong(t) < STRONG_TARGET);
+    const weak = ENTITY_TYPES.filter((t) => strong(t) < STRONG_TARGET || !signals.some((x) => x.type === t));
     if (weak.length === 0) break;
     if (qloo.calls.length >= callBudget) {
       note?.(`Qloo call budget (${callBudget}) reached; not refining further. Thin: ${weak.map(short).join(', ')}.`);
@@ -222,7 +222,7 @@ export async function runAnalyst(seed: Seed, { qloo, llm, take = 10, signal, not
       seedsUsed: signals.map((s) => `${s.name} (${short(s.type)})`),
       tagsUsed: tags.map((t) => t.name),
       thinTypes: weak.map(short),
-      perType: ENTITY_TYPES.map((t) => ({ type: short(t), found: [...byId.values()].filter((e) => e.type === t).length, strong: strong(t), top: [...byId.values()].filter((e) => e.type === t).sort((a, b) => (b.affinity ?? -1) - (a.affinity ?? -1)).slice(0, 3).map((e) => `${e.name} ${e.affinity?.toFixed(2) ?? 'n/a'}`) })),
+      perType: ENTITY_TYPES.map((t) => ({ type: short(t), seeds: signals.filter((x) => x.type === t).length, found: [...byId.values()].filter((e) => e.type === t).length, strong: strong(t), top: [...byId.values()].filter((e) => e.type === t).sort((a, b) => (b.affinity ?? -1) - (a.affinity ?? -1)).slice(0, 3).map((e) => `${e.name} ${e.affinity?.toFixed(2) ?? 'n/a'}`) })),
       didNotResolve: unresolved,
     };
     const action = parseRefine(await llm.complete(REFINE_SYSTEM, JSON.stringify(summary), signal));

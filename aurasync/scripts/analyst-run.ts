@@ -1,3 +1,5 @@
+// Runs the Analyst alone against live Qloo and prints the evidence. Check the output before building on top.
+// Usage: set keys in .env (see .env.example), then: npm run analyst
 import { runAnalyst } from '../src/core/analyst';
 import { chatLlm } from '../src/core/llm';
 import { QlooClient, qlooQuota } from '../src/core/qloo';

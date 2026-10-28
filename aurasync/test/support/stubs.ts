@@ -54,6 +54,7 @@ export const PLAN = {
   entities: [
     { name: 'Alpha', type: 'urn:entity:artist' },
     { name: 'Beta', type: 'urn:entity:brand' },
+    { name: 'Delta', type: 'urn:entity:place' },
   ],
   tagQueries: ['specialty coffee', 'indie rock'],
   domains: ['urn:entity:artist', 'urn:entity:brand', 'urn:entity:place'],
