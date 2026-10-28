@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AuraSync · Taste-grounded experience briefs</title>
+<style>
+:root{--bg:#0e1013;--card:#171a20;--line:#272c35;--tx:#e8eaed;--mu:#8b93a1;--ok:#3ecf8e;--warn:#f5a524;--bad:#f0616d;--ac:#8b7cf6}
+@media (prefers-color-scheme:light){:root{--bg:#f6f7f9;--card:#fff;--line:#dfe3e8;--tx:#15181d;--mu:#5d6675}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:28px 20px 60px}h1{margin:0;font-size:26px}h1 span{color:var(--ac)}
+.sub{color:var(--mu);margin:4px 0 22px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+form{display:grid;grid-template-columns:1fr 1.4fr 1fr 1fr 1fr auto;gap:10px;align-items:end}.wide{grid-column:1/-1}
+.grid{display:grid;gap:16px}.grid.two{grid-template-columns:1fr 1fr}@media(max-width:900px){.grid.two{grid-template-columns:1fr}}
+.pill.r{background:rgba(139,124,246,.18);color:var(--ac)}.fb{font-size:12px;color:var(--mu);margin-top:6px;border-left:2px solid var(--line);padding-left:8px}.loop .fb b{font-size:12px;font-weight:600;color:var(--warn)}.ph{font-weight:600;margin-bottom:10px}
+label{font-size:12px;color:var(--mu);display:block;margin-bottom:4px}
+input,select,button{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--tx);font:inherit}
+button{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:wait}
+button.ghost{background:transparent;color:var(--tx);border-color:var(--line);width:auto}
+.steps{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.step{padding:6px 12px;border-radius:99px;border:1px solid var(--line);color:var(--mu);font-size:13px}
+.step.run{border-color:var(--ac);color:var(--ac)}.step.done{border-color:var(--ok);color:var(--ok)}
+.loops{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}.loop{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.loop b{font-size:24px}.bar{height:6px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.hero{display:flex;gap:26px;align-items:center;flex-wrap:wrap}.score{font-size:54px;font-weight:700;line-height:1}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-right:6px;vertical-align:middle}
+.pill.q{background:rgba(62,207,142,.15);color:var(--ok)}.pill.l{background:rgba(245,165,36,.15);color:var(--warn)}.pill.x{background:rgba(240,97,109,.15);color:var(--bad)}
+.dom{margin:20px 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.item{padding:10px 0;border-top:1px solid var(--line)}.cite{font-size:12px;color:var(--mu);margin-top:3px}
+.err{border-color:var(--bad);color:var(--bad)}.hidden{display:none}ul{margin:6px 0;padding-left:18px}.mu{color:var(--mu);font-size:13px}
+.why{font-size:12px;color:var(--ac);margin-top:3px}.note{font-size:13px;color:var(--warn);margin-top:8px}.trace{font:12px/1.5 ui-monospace,monospace;color:var(--mu);white-space:pre-wrap;margin-top:8px}
+.gain{font-size:13px;color:var(--mu);margin-top:12px}.gain b{color:var(--ok)}details summary{cursor:pointer;color:var(--mu);font-size:13px}
+@media(max-width:800px){form{grid-template-columns:1fr 1fr}}
+@media print{body{background:#fff;color:#000}.noprint{display:none!important}.card{border-color:#ccc;break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+<h1>Aura<span>Sync</span></h1>
+<p class="sub">Three agents design the experience. Every claim is labelled Qloo-sourced or LLM-inferred, and an independent Auditor scores it in code.</p>
+<form id="f" class="card noprint">
+  <div><label>Concept</label><input name="concept" value="a café" required maxlength="80"></div>
+  <div><label>Target audience</label><input name="audience" value="friend group in their mid 20s" required maxlength="120"></div>
+  <div><label>City</label><input name="city" value="Bengaluru" required maxlength="60"></div>
+  <div><label>Compare with city (optional)</label><input name="city2" placeholder="e.g. Mumbai" maxlength="60"></div>
+  <div><label>Age band (Qloo)</label><select name="ageBand">
+    <option value="25_to_29">25 to 29</option><option value="24_and_younger">24 and younger</option><option value="30_to_34">30 to 34</option>
+    <option value="35_to_44">35 to 44</option><option value="45_to_54">45 to 54</option><option value="55_and_older">55 and older</option><option value="">Any</option></select></div>
+  <button id="go">Generate</button>
+  <div class="wide"><label>Client note (optional, steers wording only, never counted as evidence)</label><input name="note" maxlength="200" placeholder="e.g. no alcohol, wheelchair accessible"></div>
+</form>
+<div id="panels" class="grid"></div>
+</main>
+<template id="tpl">
+<section>
+  <div class="ph" data-k="head"></div>
+  <div class="card">
+    <div class="steps"><span class="step" data-k="s-analyst">1 · Analyst (Qloo)</span><span class="step" data-k="s-architect">2 · Architect</span><span class="step" data-k="s-auditor">3 · Auditor</span><span class="mu" data-k="timer"></span></div>
+    <div class="loops" data-k="loops"></div>
+  </div>
+  <div class="card err hidden" data-k="error"></div>
+  <div class="hidden" data-k="out">
+    <div class="card hero">
+      <div><div class="score" data-k="score"></div><div class="mu" data-k="verdict"></div></div>
+      <div class="mu" data-k="stats"></div>
+      <div class="noprint" style="margin-left:auto;display:flex;gap:8px"><button class="ghost" data-k="print">Export PDF</button><button class="ghost" data-k="md">Download .md</button><button class="ghost" data-k="copy">Copy JSON</button></div>
+    </div>
+    <div class="card"><h2 data-k="title" style="margin:0 0 4px"></h2><div data-k="brief"></div></div>
+    <div class="gain" data-k="gain"></div>
+    <div class="card" data-k="gaps"></div>
+    <div class="card"><b>Evidence trail</b><div class="mu" data-k="trail"></div></div>
+  </div>
+</section>
+</template>
+<script>
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const ORDER = ['music','brand','place','menu','audience','lighting','material','styling'];
+const LABEL = { music:'Music', brand:'Partner brands', place:'Nearby venues', menu:'Menu themes', audience:'Audience', lighting:'Lighting', material:'Materials', styling:'Styling' };
+const groundable2 = new Set(['music','brand','place','menu','audience']);
+const sources = [];
+let busy = 0;
+
+function makePanel(params, label) {
+  const root = document.getElementById('tpl').content.firstElementChild.cloneNode(true);
+  const k = (n) => root.querySelector('[data-k="' + n + '"]');
+  const reports = [], briefs = [];
+  let es, t0 = Date.now(), last = null, result = null;
+  k('head').textContent = label;
+  const tick = setInterval(() => k('timer').textContent = ((Date.now() - t0) / 1000).toFixed(0) + 's', 500);
+  const finish = () => { clearInterval(tick); es.close(); if (--busy === 0) document.getElementById('go').disabled = false; };
+  const fail = (m) => { k('error').textContent = m; k('error').classList.remove('hidden'); };
+
+  es = new EventSource('/api/run?' + params);
+  sources.push(es); busy++;
+  es.onmessage = (m) => {
+    const e = last = JSON.parse(m.data);
+    if (e.type === 'agent') k('s-' + e.agent).className = 'step ' + (e.status === 'start' ? 'run' : 'done');
+    if (e.type === 'note') { const n = el('div', 'note', e.agent + ': ' + e.message); k('loops').before(n); }
+    if (e.type === 'audit') { reports.push(e.report); briefs.push(e.brief); loopCard(e); }
+    if (e.type === 'run_error') { finish(); fail(e.message); }
+    if (e.type === 'run_done') { finish(); result = e.result; render(e.result, (Date.now() - t0) / 1000); }
+  };
+  es.onerror = () => {
+    if (last && (last.type === 'run_done' || last.type === 'run_error')) return;
+    finish(); fail('Connection lost before the run finished. Check the server and retry.');
+  };
+
+  // The visible conversation between agents: what the Auditor sent back to the Architect after each loop.
+  function loopCard(e) {
+    const r = e.report, d = el('div', 'loop');
+    d.append(el('div', 'mu', 'Loop ' + e.iteration), el('b', '', r.score + '%'), el('div', 'mu', r.verified + '/' + r.groundable + ' verified'));
+    const b = el('div', 'bar'), i = el('i'); i.style.width = Math.min(100, r.score) + '%'; b.append(i); d.append(b);
+    if (r.failures.length && r.score < r.target) {
+      const f = el('div', 'fb'); f.append(el('b', '', 'Auditor → Architect: '));
+      f.append(document.createTextNode(r.failures.slice(0, 3).map((x) => x.itemId + ' ' + x.reason).join(' | ') + (r.failures.length > 3 ? ' (+' + (r.failures.length - 3) + ' more)' : '')));
+      d.append(f);
+    }
+    k('loops').append(d);
+  }
+
+  function render(r, secs) {
+    const ent = new Map(r.evidence.entities.map((x) => [x.id, x])), tag = new Map(r.evidence.tags.map((x) => [x.id, x]));
+    const failed = new Map(r.report.failures.map((f) => [f.itemId, f.reason])), fab = new Set(r.report.fabricatedItems);
+    // An item is "fixed after audit" only if an earlier loop failed that id AND the text has since changed.
+    const finalText = new Map(r.brief.items.map((i) => [i.id, i.text]));
+    const fixed = new Set();
+    reports.slice(0, -1).forEach((rep, n) => rep.failures.forEach((f) => { const old = briefs[n].items.find((i) => i.id === f.itemId); if (old && finalText.has(f.itemId) && finalText.get(f.itemId) !== old.text) fixed.add(f.itemId); }));
+    const groundable = new Set(['music','brand','place','menu','audience']);
+    k('score').textContent = r.report.score + '%';
+    k('verdict').textContent = r.reachedTarget ? 'Target ' + r.report.target + '% reached' : 'Target ' + r.report.target + '% not reached; reported as-is';
+    k('stats').textContent = r.iterations + ' loop(s) · ' + secs.toFixed(0) + 's · ' + r.report.verified + '/' + r.report.groundable + ' verified · ' + r.report.llmOnlyItems + ' design items (not scored)' + (r.report.meanAffinity != null ? ' · mean affinity ' + r.report.meanAffinity : '') + ' · ' + r.stats.qlooCalls + ' Qloo calls' + (r.stats.llmCalls != null ? ' · ' + r.stats.llmCalls + ' LLM calls' : '');
+        const gain = k('gain'); if (r.history.length > 1) { gain.append(document.createTextNode('Auditor loop gain: ' + r.history.map((h) => h.score + '%').join(' → ') + ' (' + (r.history.at(-1).score - r.history[0].score >= 0 ? '+' : '') + (r.history.at(-1).score - r.history[0].score).toFixed(1) + ' pts)')); }
+    k('title').textContent = r.brief.title;
+    const root2 = k('brief');
+    for (const d of ORDER) {
+      const items = r.brief.items.filter((i) => i.domain === d); if (!items.length) continue;
+      root2.append(el('div', 'dom', LABEL[d]));
+      for (const i of items) {
+        const row = el('div', 'item'), ok = groundable.has(i.domain) && i.source === 'qloo' && !failed.has(i.id);
+        row.append(el('span', 'pill ' + (fab.has(i.id) ? 'x' : ok ? 'q' : 'l'), fab.has(i.id) ? 'Unsupported' : ok ? 'Qloo-sourced' : 'LLM-inferred'));
+        if (ok && fixed.has(i.id)) row.append(el('span', 'pill r', 'Fixed after audit'));
+        row.append(document.createTextNode(i.text));
+        const cites = [...i.entityIds.map((id) => { const x = ent.get(id); return x ? x.name + (x.affinity != null ? ' (affinity ' + x.affinity.toFixed(2) + ')' : '') : id; }),
+          ...i.tagIds.map((id) => { const x = tag.get(id); return 'tag: ' + (x ? x.name : id); })];
+        if (cites.length) row.append(el('div', 'cite', 'Evidence: ' + cites.join(' · ')));
+        const why = i.entityIds.map((id) => ent.get(id)).filter((x) => x && x.becauseOf).map((x) => x.name + ' ← because of ' + x.becauseOf.map((b) => b.name).join(', '));
+        if (why.length) row.append(el('div', 'why', 'Qloo explainability: ' + why.join(' · ')));
+        if (failed.has(i.id)) row.append(el('div', 'cite', 'Auditor: ' + failed.get(i.id)));
+        root2.append(row);
+      }
+    }
+    const g = k('gaps'); g.append(el('b', '', 'What the Auditor could not verify'));
+    if (!r.report.failures.length) g.append(el('div', 'mu', 'Nothing flagged. Every groundable item cites evidence.'));
+    else { const u = el('ul'); r.report.failures.forEach((f) => u.append(el('li', '', f.itemId + ': ' + f.reason))); g.append(u); }
+    const un = r.evidence.unresolved.length ? ' Unresolved by Qloo (never guessed): ' + r.evidence.unresolved.join('; ') + '.' : '';
+    k('trail').textContent = r.evidence.entities.length + ' entities, ' + r.evidence.tags.length + ' tags, ' + r.evidence.signals.length + ' resolved seed signals (' + r.evidence.signals.map((x) => x.name).join(', ') + ').' + (r.evidence.replanned ? ' Analyst re-planned once.' : '') + (r.evidence.refinements.length ? ' Adaptive rounds: ' + r.evidence.refinements.map((x) => x.type.replace('urn:entity:', '') + ' strong ' + x.strongBefore + '→' + x.strongAfter + (x.addedEntities.length ? ' (+' + x.addedEntities.join(', ') + ')' : '')).join('; ') + '.' : '') + un;
+    const tr = el('details'); tr.append(el('summary', '', 'Qloo call trace (' + r.evidence.calls.length + ')'), el('div', 'trace', r.evidence.calls.map((c) => c.status + ' ' + c.ms + 'ms ' + c.endpoint + ' ' + (c.params['filter.type'] || c.params['filter.query'] || c.params.query || '')).join('\n')));
+    k('trail').append(tr);
+    k('out').classList.remove('hidden');
+  }
+  k('print').onclick = () => window.print();
+  k('md').onclick = () => {
+    const r = result, ent = new Map(r.evidence.entities.map((x) => [x.id, x])), tag = new Map(r.evidence.tags.map((x) => [x.id, x]));
+    const failed = new Set(r.report.failures.map((f) => f.itemId));
+    const lines = ['# ' + r.brief.title, '', '_Cultural Cohesion Score ' + r.report.score + '% (' + r.report.verified + '/' + r.report.groundable + ' groundable items verified; target ' + r.report.target + '%). Computed by code, not by an LLM._', ''];
+    for (const d of ORDER) {
+      const items = r.brief.items.filter((i) => i.domain === d); if (!items.length) continue;
+      lines.push('## ' + LABEL[d], '');
+      for (const i of items) {
+        const ok = groundable2.has(i.domain) && i.source === 'qloo' && !failed.has(i.id);
+        const ev = [...i.entityIds.map((id) => ent.get(id)?.name || id), ...i.tagIds.map((id) => 'tag ' + (tag.get(id)?.name || id))];
+        lines.push('- **[' + (ok ? 'Qloo-sourced' : 'LLM-inferred') + ']** ' + i.text + (ev.length ? ' _(evidence: ' + ev.join('; ') + ')_' : ''));
+      }
+      lines.push('');
+    }
+    if (r.report.failures.length) lines.push('## Not verified', '', ...r.report.failures.map((f) => '- ' + f.itemId + ': ' + f.reason), '');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/markdown' }));
+    a.download = 'aurasync-brief.md'; a.click(); URL.revokeObjectURL(a.href);
+  };
+  k('copy').onclick = () => navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+  return root;
+}
+
+document.getElementById('f').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  sources.splice(0).forEach((s) => s.close()); busy = 0;
+  const fd = new FormData(ev.target), city2 = String(fd.get('city2') || '').trim();
+  const base = { concept: fd.get('concept'), audience: fd.get('audience'), ageBand: fd.get('ageBand'), note: fd.get('note') || '' };
+  const cities = [String(fd.get('city'))].concat(city2 ? [city2] : []);
+  const box = document.getElementById('panels');
+  box.className = 'grid' + (cities.length > 1 ? ' two' : '');
+  box.replaceChildren();
+  document.getElementById('go').disabled = true;
+  cities.forEach((c) => box.append(makePanel(new URLSearchParams({ ...base, city: c }), cities.length > 1 ? c : 'Result')));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+node_modules
+.env
+.env.local
+# Qloo hackathon rule (reported by other entrants): never commit real Qloo responses
+probe-out/

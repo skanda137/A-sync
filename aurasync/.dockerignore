@@ -1,0 +1,4 @@
+node_modules
+probe-out
+.env
+*.zip
