@@ -13,7 +13,7 @@ Hard rules (an independent Auditor checks every one, in code):
 3. lighting, material, styling are NOT groundable. Use source "llm", entityIds [], tagIds []. Make them concrete (colour temperature in K, materials, textures, dress cues) and consistent with the grounded items.
 4. "text" is one or two specific, actionable sentences a pop-up team could execute. Say WHY it fits this audience when evidence supports it.
 5. Item ids are short and stable (m1, b1, p1, f1, a1, l1, s1, t1...). When revising, keep ids of items that passed.
-If EVIDENCE is thin for a domain, write fewer items for it rather than guessing.`;
+Fit matters, not just affinity: skip an evidence entity that makes no sense for this concept and audience (for example a wedding-wear label for a café, or a stadium-EDM act for a quiet daytime venue) and choose the plausible ones; say in "text" why the pick fits. If EVIDENCE is thin for a domain, write fewer items for it rather than guessing.`;
 
 const short = (t: string) => t.replace('urn:entity:', '');
 
@@ -68,8 +68,6 @@ export function parseBrief(text: string): Brief {
   }
   return assertBrief(raw);
 }
-
-// One repair attempt on malformed output, then fail fast (consistent with the run's stop rules).
 export function makeArchitect(llm: Llm): Architect {
   return async ({ seed, evidence, previousBrief, feedback, signal }) => {
     const user = buildPrompt(seed, evidence, previousBrief, feedback);
