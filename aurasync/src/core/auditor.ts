@@ -5,20 +5,6 @@ export const DEFAULT_TARGET = 85;
 export const MIN_AFFINITY = 0.5; // a named entity counts as strong evidence at or above this
 export const FABRICATION_PENALTY = 10; // points per brief item citing ids that are not in the evidence
 
-/**
- * Cultural Cohesion Score, computed, no LLM involved:
- *   score = 100 * verified / groundable  -  10 * fabricatedItems      (clamped to 0..100)
- * groundable = brief items in Qloo-groundable domains (music, brand, place, menu, audience)
- * An item is verified only when ALL of these hold:
- *   - source 'qloo', every cited id exists in the evidence
- *   - music/brand/place: it cites an entity of the matching Qloo type, its text names that entity,
- *     and that entity has affinity >= MIN_AFFINITY
- *   - menu/audience: its text names a cited entity with affinity >= MIN_AFFINITY, OR shares a significant
- *     word with the name of a cited tag
- * fabricated = any item citing an id not in the evidence, or an LLM-only domain (lighting, material,
- * styling) claiming source 'qloo' or citing ids.
- * LLM-only domains are counted and reported but never scored.
- */
 export function audit(brief: Brief, evidence: Evidence, target = DEFAULT_TARGET): AuditReport {
   const entityById = new Map(evidence.entities.map((e) => [e.id, e]));
   const tagName = new Map<string, string>(evidence.tags.map((t) => [t.id, t.name]));

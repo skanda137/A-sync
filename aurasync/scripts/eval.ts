@@ -1,5 +1,3 @@
-// Runs the predefined seeds through the full pipeline and writes aggregate numbers to eval-results.md.
-// Contains no raw Qloo payloads. A seed that errors counts as a miss and is listed as such. Usage: npm run eval
 import { writeFileSync } from 'node:fs';
 import { makeArchitect } from '../src/core/architect';
 import { chatLlm, countingLlm } from '../src/core/llm';

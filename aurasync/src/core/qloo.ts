@@ -1,9 +1,5 @@
 import type { EntityType, EvidenceCall } from './types';
 
-// Parsers are strict and throw on mismatch. Shapes were checked against the live hackathon API by `npm run probe`
-// on 2026-10-28: search, tags, insights, query.affinity (0..1) and per-entity explainability all parse.
-// Re-run the probe if Qloo changes anything; fix parsers against probe-out/*.json.
-
 export class QlooError extends Error {
   constructor(message: string, readonly status: number | null, readonly endpoint: string) {
     super(message);

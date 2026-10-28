@@ -1,6 +1,3 @@
-// Zero-dependency HTTP + SSE server. Keys never leave the server. Public-endpoint safeguards: input validation,
-// per-IP limit, daily cap, concurrency cap, Qloo quota guard, hard run timeout. A run is aborted (and its
-// concurrency slot freed) when the client leaves or the timeout fires.
 import { createServer, type Server, type ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';

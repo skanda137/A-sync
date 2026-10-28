@@ -1,9 +1,3 @@
-// "Why not just ask an LLM?" Measured, not argued. For each seed, an LLM with NO Qloo access names 5 artists,
-// 5 brands and 5 venues for the audience and city. We then look each name up in Qloo.
-// "Not confirmed" means Qloo has no exact-name entity of that type. That is weaker than "hallucinated" (Qloo's
-// catalogue is finite), so the number is reported as a confirmation rate, never as a hallucination rate.
-// AuraSync's own named entities come from Qloo, so they are confirmed by construction (that is the point).
-// Usage: npm run baseline   -> writes baseline-results.md
 import { writeFileSync } from 'node:fs';
 import { chatLlm } from '../src/core/llm';
 import { QlooClient } from '../src/core/qloo';

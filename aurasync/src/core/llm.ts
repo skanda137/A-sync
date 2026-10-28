@@ -7,9 +7,6 @@ export interface ChatOptions {
   fetchImpl?: typeof fetch;
 }
 
-// One provider-neutral path: any OpenAI-compatible /chat/completions endpoint (Gemini, Groq, OpenRouter, NVIDIA NIM...).
-// Throws if misconfigured or on any non-200 (a 429 from a free tier is surfaced, not hidden). Aborting cancels the request.
-// max_tokens is generous because "thinking" models count reasoning tokens against it and a truncated reply is invalid JSON.
 export function chatLlm(o: ChatOptions = {}): Llm {
   const baseUrl = (o.baseUrl ?? process.env.LLM_BASE_URL ?? '').replace(/\/$/, '');
   const apiKey = o.apiKey ?? process.env.LLM_API_KEY;

@@ -1,6 +1,3 @@
-// Shared contract. Person A and Person B both import from here. Change it together, never alone.
-// Changes in this version are listed in CHANGELOG.md (all additive except `requireMention` removal).
-
 export type EntityType = 'urn:entity:artist' | 'urn:entity:brand' | 'urn:entity:place';
 export const ENTITY_TYPES: readonly EntityType[] = ['urn:entity:artist', 'urn:entity:brand', 'urn:entity:place'];
 
